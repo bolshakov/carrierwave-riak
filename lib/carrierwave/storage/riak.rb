@@ -20,9 +20,9 @@ module CarrierWave
           @client = ::Riak::Client.new(options)
         end
 
-        def store(bucket, key, payload, headers = {})
+        def store(bucket, filename, payload, headers = {})
           bucket = @client.bucket(bucket)
-          robject = ::Riak::RObject.new(bucket, key)
+          robject = ::Riak::RObject.new(bucket, filename)
           robject.content_type = headers[:content_type]
           robject.raw_data = payload
           robject.store
@@ -47,24 +47,15 @@ module CarrierWave
         end
       end
 
-      class File
+      class File < SanitizedFile
+        attr_reader :uploader, :storage
+        protected :uploader, :storage
+        delegate :blank?, to: :file
 
-        def initialize(uploader, base, bucket, key)
+        def initialize(uploader, storage, filename)
           @uploader = uploader
-          @bucket = bucket
-          @key = key
-          @base = base
-        end
-
-        ##
-        # Returns the key of the riak file
-        #
-        # === Returns
-        #
-        # [String] A filename
-        #
-        def key
-          @key
+          @storage = storage
+          @original_filename = filename
         end
 
         ##
@@ -75,7 +66,7 @@ module CarrierWave
         # [String] A full path to file
         #
         def path
-          Pathname.new('/').join(@bucket).join(key).to_s
+          ::File.join('/', uploader.bucket, filename)
         end
 
         ##
@@ -138,7 +129,7 @@ module CarrierWave
         #
         def delete
           begin
-            riak_client.delete(@bucket, @key)
+            riak_client.delete(uploader.bucket, self.filename)
             true
           rescue Exception => e
             # If the file's not there, don't panic
@@ -154,10 +145,13 @@ module CarrierWave
         # boolean
         #
         def store(file)
-          @file = riak_client.store(@bucket, @key, file.read, {:content_type => file.content_type})
-          @key = @file.key
-          @uploader.key = @key
+          @file = riak_client.store(uploader.bucket, self.filename, file.read, {:content_type => file.content_type})
+          uploader.key = self.filename
           true
+        end
+
+        def ==(other)
+          self.uploader == other.uploader && self.original_filename == other.original_filename && self.storage == other.storage
         end
 
         private
@@ -167,7 +161,7 @@ module CarrierWave
           end
 
           def connection
-            @base.connection
+            @storage.connection
           end
 
           ##
@@ -178,7 +172,7 @@ module CarrierWave
           # [Riak::RObject] file data from remote service
           #
           def file
-            @file ||= riak_client.get(@bucket, @key)
+            @file ||= riak_client.get(uploader.bucket, self.filename)
           end
 
           def riak_client
@@ -191,9 +185,9 @@ module CarrierWave
 
           def riak_options
             if @uploader.riak_nodes
-              {:nodes => @uploader.riak_nodes}
+              {:nodes => uploader.riak_nodes}
             else
-              {:host => @uploader.riak_host, :http_port => @uploader.riak_port}
+              {:host => uploader.riak_host, :http_port => uploader.riak_port}
             end
           end
 
@@ -211,7 +205,7 @@ module CarrierWave
       # [CarrierWave::Storage::Riak::File] the stored file
       #
       def store!(file)
-        f = CarrierWave::Storage::Riak::File.new(uploader, self, uploader.bucket, uploader.key)
+        f = CarrierWave::Storage::Riak::File.new(uploader, self, uploader.filename)
         f.store(file)
         f
       end
@@ -226,14 +220,9 @@ module CarrierWave
       #
       # [CarrierWave::Storage::Riak::File] the stored file
       #
-      def retrieve!(key)
-        CarrierWave::Storage::Riak::File.new(uploader, self, uploader.bucket, key)
+      def retrieve!(identifier)
+        CarrierWave::Storage::Riak::File.new(uploader, self, identifier)
       end
-
-      def identifier
-        uploader.key
-      end
-
     end # CloudFiles
   end # Storage
 end # CarrierWave
