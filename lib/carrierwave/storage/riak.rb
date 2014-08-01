@@ -158,7 +158,7 @@ module CarrierWave
         #
         def store(file)
           @file = riak_client.store(uploader.riak_bucket, identifier, file.read, {:content_type => file.content_type})
-          uploader.key = @file.key
+          update_model_column(@file.key)
           true
         end
 
@@ -167,6 +167,12 @@ module CarrierWave
         end
 
         private
+
+          def update_model_column(key)
+            if defined?(Rails) && uploader.riak_genereated_keys
+              uploader.model.update_column(uploader.mounted_as.to_sym, key)
+            end
+          end
 
           def headers
             @headers ||= {  }

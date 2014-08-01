@@ -9,17 +9,6 @@ module CarrierWave
 
       storage :riak
 
-      if defined?(Rails)
-        after :store, :updatemodel
-
-        def updatemodel(file)
-          if self.riak_genereated_keys
-            model[self.mounted_as.to_sym] = self.key
-            model.save
-          end
-        end
-      end
-
       def inspect
         "#<#{self.class.name} key=#{key.inspect} bucket=#{bucket.inspect}>"
       end
