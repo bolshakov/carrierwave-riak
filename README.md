@@ -21,16 +21,18 @@ You'll need to configure the Riak client in config/initializers/carrierwave.rb
 ```ruby
 CarrierWave.configure do |config|
   config.storage = :riak
+  config.asset_host = "http://example.com"
+  config.riak_backet = 'yellow_bucket'
   config.riak_host = 'localhost'
   config.riak_port = 8098
 end
 ```
 
-or, if you use claster of nodes
+or, if you use claster of nodes pass `riak_host` options instead of `riak_host` and `riak_port`
 
 ```ruby
 CarrierWave.configure do |config|
-  config.storage = :riak
+  # ...
   config.riak_nodes = [
     { host: "127.0.0.1", http_port: 8098 }, 
     { host: "127.0.0.1", http_port: 8099 }
@@ -38,24 +40,33 @@ CarrierWave.configure do |config|
 end
 ```
 
-## Usage example
+To overwrite `riak_bucket` for specific uploader (See [https://github.com/carrierwaveuploader/carrierwave/wiki/How-to:-Define-different-storage-configuration-for-each-Uploader.](carrierwave wiki) for details):
 
-Note that for your uploader, your should extend the CarrierWave::Uploader::Riak class.
+If you need to have Riak generated keys, use `riak_genereated_keys` option:
+ 
+```ruby
+CarrierWave.configure do |config|
+  # ...
+  config.riak_genereated_keys = true
+end
+``` 
 
 ```ruby
-class DocumentUploader < CarrierWave::Uploader::Riak
+class AvatarUploader < CarrierWave::Uploader::Riak
+  storage :riak
 
-    # If key method is not defined, Riak generated keys will be used and returned as the identifier
-
-    def key
-        original_filename
-    end
-
-    def bucket
-      "my_bucket"
-    end
+  # define some uploader specific configurations in the initializer
+  # to override the global configuration
+  def initialize(*)
+    super
+    self.riak_bucket = 'another_bucket'
+  end
 end
 ```
+
+## Usage example
+
+Note that for your uploader, your should extend the `CarrierWave::Uploader::Riak` class.
 
 ### Using Riak generated keys ###
 
