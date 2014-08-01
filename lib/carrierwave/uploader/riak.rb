@@ -13,8 +13,9 @@ module CarrierWave
         after :store, :updatemodel
 
         def updatemodel(file)
-          if model.read_attribute(:"#{self.mounted_as}").nil? || model.read_attribute(:"#{self.mounted_as}") != self.key
-            model.update_attribute(:"#{self.mounted_as}", self.key)
+          if self.riak_genereated_keys
+            model[self.mounted_as.to_sym] = self.key
+            model.save
           end
         end
       end

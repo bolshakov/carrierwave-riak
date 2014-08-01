@@ -58,6 +58,18 @@ module CarrierWave
           @original_filename = filename
         end
 
+        def identifier_with_riak_genereated_keys
+          if uploader.riak_genereated_keys
+            nil
+          else
+            identifier_without_riak_genereated_keys
+          end
+        end
+
+        alias_method :identifier_without_riak_genereated_keys, :identifier
+        alias_method :identifier, :identifier_with_riak_genereated_keys
+
+
         ##
         # Returns the path of the riak file
         #
@@ -129,7 +141,7 @@ module CarrierWave
         #
         def delete
           begin
-            riak_client.delete(uploader.riak_bucket, self.filename)
+            riak_client.delete(uploader.riak_bucket, identifier)
             true
           rescue Exception => e
             # If the file's not there, don't panic
@@ -145,8 +157,8 @@ module CarrierWave
         # boolean
         #
         def store(file)
-          @file = riak_client.store(uploader.riak_bucket, self.filename, file.read, {:content_type => file.content_type})
-          uploader.key = self.filename
+          @file = riak_client.store(uploader.riak_bucket, identifier, file.read, {:content_type => file.content_type})
+          uploader.key = @file.key
           true
         end
 
@@ -172,7 +184,7 @@ module CarrierWave
           # [Riak::RObject] file data from remote service
           #
           def file
-            @file ||= riak_client.get(uploader.riak_bucket, self.filename)
+            @file ||= riak_client.get(uploader.riak_bucket, identifier)
           end
 
           def riak_client

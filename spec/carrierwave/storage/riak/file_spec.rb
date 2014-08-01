@@ -32,6 +32,18 @@ describe CarrierWave::Storage::Riak::File do
     end
   end
 
+  describe '#identifier' do
+    it 'should return normal supplied identifier' do
+      expect(uploader).to receive(:riak_genereated_keys).and_return(nil)
+      expect(subject.identifier).to eq 'the_key.txt'
+    end
+
+    it 'should return nil if riak_genereated_keys option is true' do
+      expect(uploader).to receive(:riak_genereated_keys).and_return(true)
+      expect(subject.identifier).to be nil
+    end
+  end
+
   describe '==' do
     it 'should be equal if all attributes are equal' do
       expect(subject).to eq CarrierWave::Storage::Riak::File.new(uploader, storage, filename)
