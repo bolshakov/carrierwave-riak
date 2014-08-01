@@ -66,7 +66,7 @@ module CarrierWave
         # [String] A full path to file
         #
         def path
-          ::File.join('/', uploader.bucket, filename)
+          ::File.join('/', uploader.riak_bucket, filename)
         end
 
         ##
@@ -129,7 +129,7 @@ module CarrierWave
         #
         def delete
           begin
-            riak_client.delete(uploader.bucket, self.filename)
+            riak_client.delete(uploader.riak_bucket, self.filename)
             true
           rescue Exception => e
             # If the file's not there, don't panic
@@ -145,7 +145,7 @@ module CarrierWave
         # boolean
         #
         def store(file)
-          @file = riak_client.store(uploader.bucket, self.filename, file.read, {:content_type => file.content_type})
+          @file = riak_client.store(uploader.riak_bucket, self.filename, file.read, {:content_type => file.content_type})
           uploader.key = self.filename
           true
         end
@@ -172,7 +172,7 @@ module CarrierWave
           # [Riak::RObject] file data from remote service
           #
           def file
-            @file ||= riak_client.get(uploader.bucket, self.filename)
+            @file ||= riak_client.get(uploader.riak_bucket, self.filename)
           end
 
           def riak_client

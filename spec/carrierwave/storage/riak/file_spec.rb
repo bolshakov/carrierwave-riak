@@ -3,7 +3,7 @@ require 'spec_helper'
 describe CarrierWave::Storage::Riak::File do
   let(:uploader) do
     double('CarrierWave::Uploader::Riak',
-           bucket: 'yellow_bucket',
+           riak_bucket: 'yellow_bucket',
            riak_nodes: []
     )
   end
