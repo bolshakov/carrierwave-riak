@@ -10,7 +10,7 @@ module CarrierWave
       storage :riak
 
       def inspect
-        "#<#{self.class.name} key=#{key.inspect} bucket=#{bucket.inspect}>"
+        "#<#{self.class.name} key=#{filename.inspect} bucket=#{riak_bucket.inspect}>"
       end
 
       private

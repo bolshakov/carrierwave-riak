@@ -58,18 +58,6 @@ module CarrierWave
           @original_filename = filename
         end
 
-        def identifier_with_riak_genereated_keys
-          if uploader.riak_genereated_keys
-            nil
-          else
-            identifier_without_riak_genereated_keys
-          end
-        end
-
-        alias_method :identifier_without_riak_genereated_keys, :identifier
-        alias_method :identifier, :identifier_with_riak_genereated_keys
-
-
         ##
         # Returns the path of the riak file
         #
@@ -78,7 +66,7 @@ module CarrierWave
         # [String] A full path to file
         #
         def path
-          ::File.join('/', uploader.riak_bucket, filename)
+          ::File.join('/', uploader.riak_bucket, identifier)
         end
 
         ##
@@ -157,8 +145,8 @@ module CarrierWave
         # boolean
         #
         def store(file)
-          @file = riak_client.store(uploader.riak_bucket, identifier, file.read, {:content_type => file.content_type})
-          update_model_column(@file.key)
+          @file = riak_client.store(uploader.riak_bucket, riak_key, file.read, {:content_type => file.content_type})
+          update_filename(@file.key)
           true
         end
 
@@ -167,10 +155,21 @@ module CarrierWave
         end
 
         private
+          def riak_key
+            uploader.riak_genereated_keys ? nil : identifier
+          end
 
-          def update_model_column(key)
-            if defined?(Rails) && uploader.riak_genereated_keys
-              uploader.model.update_column(uploader.mounted_as.to_sym, key)
+          def update_filename(new_filename)
+            if uploader.riak_genereated_keys
+              @original_filename = new_filename
+
+              update_model_column(@original_filename)
+            end
+          end
+
+          def update_model_column(new_filemame)
+            if defined?(Rails) && uploader.model
+              uploader.model.update_column(uploader.mounted_as.to_sym, new_filemame)
             end
           end
 
