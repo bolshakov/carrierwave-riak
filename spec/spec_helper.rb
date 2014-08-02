@@ -1,8 +1,5 @@
-require 'rubygems'
 require 'rspec'
-require 'rspec/autorun'
 require 'rails'
-require 'active_record'
 require "carrierwave"
 require 'carrierwave/orm/activerecord'
 require 'carrierwave/processing/mini_magick'

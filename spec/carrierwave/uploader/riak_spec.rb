@@ -16,7 +16,7 @@ describe CarrierWave::Uploader::Riak do
 
   let(:uploader) { 
     uploader_class.new.tap { |u|
-      u.stub(:key).and_return("some_key")
+      allow(u).to receive(:key).and_return("some_key")
     }
   }
 

@@ -20,5 +20,5 @@ Gem::Specification.new do |s|
   s.add_dependency "riak-client", "~> 1.0"
 
   s.add_development_dependency "rails", "~> 3.0"
-  s.add_development_dependency "rspec", "~> 2.13"
+  s.add_development_dependency "rspec", "~> 3.0"
 end
