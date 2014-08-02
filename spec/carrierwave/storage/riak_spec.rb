@@ -1,13 +1,13 @@
 require 'spec_helper'
 
 describe CarrierWave::Storage::Riak do
-  let(:uploader) { double('uploader', filename: 'file name.txt') }
+  let(:uploader) { instance_double('CarrierWave::Uploader::Base', filename: 'file name.txt') }
 
   subject { CarrierWave::Storage::Riak.new(uploader) }
 
   context '#store' do
-    let(:riak_file) { double('CarrierWave::Storage::Riak::File') }
-    let(:file) { double('File') }
+    let(:riak_file) { instance_double('CarrierWave::Storage::Riak::File') }
+    let(:file) { instance_double('File') }
 
     before do
       expect(CarrierWave::Storage::Riak::File).to receive(:new).with(uploader, subject, uploader.filename).and_return(riak_file)
@@ -21,7 +21,7 @@ describe CarrierWave::Storage::Riak do
   end
 
   context "#retrieve!" do
-    let(:riak_file) { double('CarrierWave::Storage::Riak::File') }
+    let(:riak_file) { instance_double('CarrierWave::Storage::Riak::File') }
     let(:filename) { 'another file name.txt' }
 
     before do

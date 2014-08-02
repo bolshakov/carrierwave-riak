@@ -2,14 +2,14 @@ require 'spec_helper'
 
 describe CarrierWave::Storage::Riak::File do
   let(:uploader) do
-    double('CarrierWave::Uploader::Riak',
+    instance_double('CarrierWave::Uploader::Riak',
            riak_genereated_keys: true,
            riak_bucket: 'yellow_bucket',
            riak_nodes: [],
            mounted_as: :file
     )
   end
-  let(:storage) { double('CarrierWave::Storage::Riak') }
+  let(:storage) { instance_double('CarrierWave::Storage::Riak') }
   let(:filename) { 'the_key.txt' }
 
   subject {
@@ -18,8 +18,8 @@ describe CarrierWave::Storage::Riak::File do
 
   describe '#store' do
     let(:file) { double('File', read: '', content_type: 'text/plain') }
-    let(:riak_file) { double('Riak::RObject', key: filename) }
-    let(:riak_client) { double('CarrierWave::Storage::Riak::Connection', store: riak_file) }
+    let(:riak_file) { instance_double('Riak::RObject', key: filename) }
+    let(:riak_client) { instance_double('CarrierWave::Storage::Riak::Connection', store: riak_file) }
 
     before do
       expect(subject).to receive(:riak_client).and_return(riak_client)
