@@ -193,11 +193,7 @@ module CarrierWave
           end
 
           def riak_client
-            if @riak_client
-              @riak_client
-            else
-              @riak_client ||= CarrierWave::Storage::Riak::Connection.new(riak_options)
-            end
+            @riak_client ||= CarrierWave::Storage::Riak::Connection.new(riak_options)
           end
 
           def riak_options
